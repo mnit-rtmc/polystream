@@ -21,14 +21,15 @@
 #define VERSION "0.1"
 #define BANNER "polystream: v" VERSION "  Copyright (C)  MnDOT\n"
 
-void load_config(void);
+uint32_t load_config(void);
 
 int main(void) {
 	GMainLoop *loop;
 	printf(BANNER);
 	gst_init(NULL, NULL);
-	load_config();
-	loop = g_main_loop_new(NULL, TRUE);
-	g_main_loop_run(loop);
+	if (load_config()) {
+		loop = g_main_loop_new(NULL, TRUE);
+		g_main_loop_run(loop);
+	}
 	return 1;
 }

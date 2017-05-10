@@ -20,8 +20,9 @@
 #include <unistd.h>
 #include "elog.h"
 #include "nstr.h"
+#include "stream.h"
 
-static const char *PATH = "/var/lib/monstream/%s";
+static const char *PATH = "./%s";
 
 /* ASCII separators */
 static const char RECORD_SEP = '\n';
@@ -54,19 +55,46 @@ err:
 	return str;
 }
 
+static struct stream streams[256];
+
+static bool start_stream(nstr_t cmd, uint32_t idx) {
+	nstr_t str = nstr_dup(cmd);
+	nstr_t p1 = nstr_split(&str, UNIT_SEP);
+	nstr_t p2 = nstr_split(&str, UNIT_SEP);
+	nstr_t p3 = nstr_split(&str, UNIT_SEP);
+	nstr_t p4 = nstr_split(&str, UNIT_SEP);
+	char uri[128];
+	char encoding[16];
+	char host[128];
+	int port;
+
+	struct stream *st = streams + idx;
+
+	stream_init(st, idx);
+	nstr_wrap(uri, sizeof(uri), p1);
+	nstr_wrap(encoding, sizeof(encoding), p2);
+	nstr_wrap(host, sizeof(host), p3);
+	port = nstr_parse_u32(p4);
+	stream_set_location(st, uri);
+	stream_set_encoding(st, encoding);
+	stream_set_host(st, host);
+	stream_set_port(st, port);
+	stream_start_pipeline(st);
+
+	return true;
+}
+
 uint32_t load_config(void) {
-	char buf[128];
-	nstr_t str = config_load("config", nstr_make(buf, sizeof(buf), 0));
-	if (nstr_len(str)) {
-		nstr_t cmd = nstr_chop(str, RECORD_SEP);
-		nstr_t p1 = nstr_split(&cmd, UNIT_SEP);
-		if (nstr_cmp_z(p1, "config")) {
-			nstr_t p2 = nstr_split(&cmd, UNIT_SEP);
-			int m = nstr_parse_u32(p2);
-			if (m > 0)
-				return m;
-		} else
-			elog_err("Invalid command: %s\n", nstr_z(str));
+	char buf[16384];
+	uint32_t n_streams = 0;
+	nstr_t str = config_load("polystream.conf", nstr_make(buf, sizeof(buf),
+		0));
+	while (nstr_len(str)) {
+		nstr_t cmd = nstr_split(&str, RECORD_SEP);
+		if (start_stream(cmd, n_streams))
+			n_streams++;
+		if (n_streams > 255)
+			break;
 	}
-	return 1;
+	return n_streams;
 }
