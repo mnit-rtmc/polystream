@@ -90,8 +90,6 @@ static void stream_add_src_rtsp(struct stream *st) {
 	GstElement *src = gst_element_factory_make("rtspsrc", NULL);
 	g_object_set(G_OBJECT(src), "location", st->location, NULL);
 	g_object_set(G_OBJECT(src), "latency", st->latency, NULL);
-/*	g_object_set(G_OBJECT(src), "drop-on-latency", TRUE, NULL);
-	g_object_set(G_OBJECT(src), "do-retransmission", FALSE, NULL); */
 	g_signal_connect(src, "select-stream", G_CALLBACK(select_stream_cb),st);
 	stream_add(st, src);
 }

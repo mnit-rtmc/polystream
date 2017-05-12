@@ -57,6 +57,12 @@ err:
 
 static struct stream streams[256];
 
+static void stop_stream_cb(struct stream *st) {
+	elog_err("Restarting stream %s\n", st->location);
+	stream_stop_pipeline(st);
+	stream_start_pipeline(st);
+}
+
 static bool start_stream(nstr_t cmd, uint32_t idx) {
 	nstr_t str = nstr_dup(cmd);
 	nstr_t p1 = nstr_split(&str, UNIT_SEP);
@@ -71,6 +77,7 @@ static bool start_stream(nstr_t cmd, uint32_t idx) {
 	struct stream *st = streams + idx;
 
 	stream_init(st, idx);
+	st->stop = stop_stream_cb;
 	nstr_wrap(uri, sizeof(uri), p1);
 	nstr_wrap(encoding, sizeof(encoding), p2);
 	nstr_wrap(host, sizeof(host), p3);
@@ -79,6 +86,7 @@ static bool start_stream(nstr_t cmd, uint32_t idx) {
 	stream_set_encoding(st, encoding);
 	stream_set_host(st, host);
 	stream_set_port(st, port);
+	elog_err("Starting stream %s\n", st->location);
 	stream_start_pipeline(st);
 
 	return true;
