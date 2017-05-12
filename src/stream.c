@@ -17,9 +17,10 @@
 #include <string.h>
 #include <gst/gst.h>
 #include <gst/video/video.h>
-#include <gst/video/videooverlay.h>
 #include "elog.h"
 #include "stream.h"
+
+#define STREAM_NUM_VIDEO	(0)
 
 static const uint32_t DEFAULT_LATENCY = 200;
 
@@ -74,12 +75,24 @@ static void stream_add_sink(struct stream *st) {
 	stream_add(st, sink);
 }
 
+static gboolean select_stream_cb(GstElement *src, guint num, GstCaps *caps,
+	gpointer user_data)
+{
+	switch (num) {
+	case STREAM_NUM_VIDEO:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static void stream_add_src_rtsp(struct stream *st) {
 	GstElement *src = gst_element_factory_make("rtspsrc", NULL);
 	g_object_set(G_OBJECT(src), "location", st->location, NULL);
 	g_object_set(G_OBJECT(src), "latency", st->latency, NULL);
 /*	g_object_set(G_OBJECT(src), "drop-on-latency", TRUE, NULL);
-	g_object_set(G_OBJECT(src), "do-retransmission", FALSE, NULL);*/
+	g_object_set(G_OBJECT(src), "do-retransmission", FALSE, NULL); */
+	g_signal_connect(src, "select-stream", G_CALLBACK(select_stream_cb),st);
 	stream_add(st, src);
 }
 
@@ -89,13 +102,20 @@ static void stream_add_mp4_pay(struct stream *st) {
 	stream_add(st, pay);
 }
 
+static void stream_add_h264_pay(struct stream *st) {
+	GstElement *pay = gst_element_factory_make("rtph264pay", NULL);
+	g_object_set(G_OBJECT(pay), "config-interval", -1, NULL);
+	stream_add(st, pay);
+}
+
 static void stream_add_later_elements(struct stream *st) {
 	stream_add_sink(st);
 	if (strcmp("MPEG4", st->encoding) == 0) {
 		stream_add_mp4_pay(st);
 		stream_add(st, gst_element_factory_make("rtpmp4vdepay", NULL));
 	} else if (strcmp("H264", st->encoding) == 0) {
-		// FIXME
+		stream_add_h264_pay(st);
+		stream_add(st, gst_element_factory_make("rtph264depay", NULL));
 	} else
 		elog_err("Invalid encoding: %s\n", st->encoding);
 }
