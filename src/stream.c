@@ -16,12 +16,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <gst/gst.h>
-#include <gst/video/video.h>
 #include "elog.h"
 #include "stream.h"
 
 #define STREAM_NUM_VIDEO	(0)
 
+static const char *IFACE = "eth0";
 static const uint32_t DEFAULT_LATENCY = 0;
 
 static int stream_elem_next(const struct stream *st) {
@@ -72,6 +72,7 @@ static void stream_add_sink(struct stream *st) {
 	g_object_set(G_OBJECT(sink), "host", st->host, NULL);
 	g_object_set(G_OBJECT(sink), "port", st->port, NULL);
 	g_object_set(G_OBJECT(sink), "ttl-mc", 8, NULL);
+	g_object_set(G_OBJECT(sink), "multicast-iface", IFACE, NULL);
 	stream_add(st, sink);
 }
 
