@@ -18,12 +18,14 @@
 #include "nstr.h"
 
 static void elog_now(void) {
+#if 0
 	char buf[32];
 
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
 	strftime(buf, sizeof(buf), "%a, %d %b %Y %T %z", tm);
 	fprintf(stderr, "%s ", buf);
+#endif
 }
 
 void elog_err(const char *format, ...) {
