@@ -1,5 +1,5 @@
 CC = gcc
-DEPS = gtk+-3.0 gstreamer-1.0 gstreamer-video-1.0
+DEPS = gstreamer-1.0
 CFLAGS = -O2 -Wall -Werror -flto `pkg-config --cflags $(DEPS)`
 LIBS = `pkg-config --libs $(DEPS)`
 TARGET = polystream
