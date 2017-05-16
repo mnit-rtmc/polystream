@@ -57,10 +57,16 @@ err:
 
 static struct stream streams[256];
 
+static gboolean do_restart(gpointer data) {
+	struct stream *st = (struct stream *) data;
+	stream_start_pipeline(st);
+	return FALSE;
+}
+
 static void stop_stream_cb(struct stream *st) {
 	elog_err("Restarting stream %s\n", st->location);
 	stream_stop_pipeline(st);
-	stream_start_pipeline(st);
+	g_timeout_add(500, do_restart, st);
 }
 
 static bool start_stream(nstr_t cmd, uint32_t idx) {
