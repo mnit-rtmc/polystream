@@ -22,7 +22,7 @@
 
 #define STREAM_NUM_VIDEO	(0)
 
-static const uint32_t DEFAULT_LATENCY = 200;
+static const uint32_t DEFAULT_LATENCY = 0;
 
 static int stream_elem_next(const struct stream *st) {
 	int i = 0;
