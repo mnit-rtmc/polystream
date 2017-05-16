@@ -22,7 +22,7 @@
 #include "nstr.h"
 #include "stream.h"
 
-static const char *PATH = "./%s";
+static const char *PATH = "/etc/%s";
 
 /* ASCII separators */
 static const char RECORD_SEP = '\n';
