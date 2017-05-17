@@ -1,0 +1,27 @@
+#!/usr/bin/python
+#
+# generate polystream.conf from IRIS db
+#
+import psycopg2
+import getpass
+
+CONNECT = 'dbname=tms user=%s'
+CAM = 'SELECT c.name, uri_scheme, encoder, uri_path, encoding, enc_mcast ' \
+      'FROM camera_view c JOIN encoder_type_view e ON c.encoder_type = e.name '\
+      'WHERE encoder_type LIKE \'Infinova%\' AND enc_mcast != \'\' ' \
+      'ORDER BY cam_num'
+
+def do_list():
+    conn = psycopg2.connect(CONNECT % getpass.getuser())
+    cursor = conn.cursor()
+    cursor.execute(CAM)
+    records = cursor.fetchall()
+    for rec in records:
+        nm, scheme, encoder, path, encoding, mcast = rec
+        mcast_ip, mcast_port = mcast.split(':')
+        print ('%s://INFINOVA:INFINOVA@%s%s\t%s\t%s\t%s' % (scheme, encoder,
+            path, encoding, mcast_ip, mcast_port))
+    conn.close()
+
+if __name__ == '__main__':
+    do_list()
