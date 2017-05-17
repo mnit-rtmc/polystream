@@ -1,0 +1,12 @@
+[Unit]
+Description=Polystream Repeater
+
+[Service]
+ExecStart=/usr/local/bin/polystream
+Nice=-20
+Type=simple
+Restart=always
+User=polystream
+
+[Install]
+WantedBy=multi-user.target
