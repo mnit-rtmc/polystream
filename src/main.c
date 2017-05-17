@@ -12,24 +12,21 @@
  * GNU General Public License for more details.
  */
 
-#include <gst/gst.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#define VERSION "0.3"
+#define VERSION "0.4"
 #define BANNER "polystream: v" VERSION "  Copyright (C)  MnDOT\n"
 
 uint32_t load_config(void);
 
 int main(void) {
-	GMainLoop *loop;
 	printf(BANNER);
-	gst_init(NULL, NULL);
-	if (load_config()) {
-		loop = g_main_loop_new(NULL, TRUE);
-		g_main_loop_run(loop);
-	}
+	if (load_config())
+		while (wait(NULL) > 0);
 	return 1;
 }

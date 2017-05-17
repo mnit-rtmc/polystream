@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <gst/gst.h>
 #include "elog.h"
 #include "nstr.h"
 #include "stream.h"
@@ -55,8 +56,6 @@ err:
 	return str;
 }
 
-static struct stream streams[256];
-
 static gboolean do_restart(gpointer data) {
 	struct stream *st = (struct stream *) data;
 	stream_start_pipeline(st);
@@ -69,7 +68,7 @@ static void stop_stream_cb(struct stream *st) {
 	g_timeout_add(500, do_restart, st);
 }
 
-static bool start_stream(nstr_t cmd, uint32_t idx) {
+static void start_stream(nstr_t cmd, uint32_t idx) {
 	nstr_t str = nstr_dup(cmd);
 	nstr_t p1 = nstr_split(&str, UNIT_SEP);
 	nstr_t p2 = nstr_split(&str, UNIT_SEP);
@@ -79,36 +78,41 @@ static bool start_stream(nstr_t cmd, uint32_t idx) {
 	char encoding[16];
 	char host[128];
 	int port;
+	struct stream stream;
+	GMainLoop *loop;
 
-	struct stream *st = streams + idx;
-
-	stream_init(st, idx);
-	st->stop = stop_stream_cb;
+	gst_init(NULL, NULL);
+	stream_init(&stream, idx);
+	stream.stop = stop_stream_cb;
 	nstr_wrap(uri, sizeof(uri), p1);
 	nstr_wrap(encoding, sizeof(encoding), p2);
 	nstr_wrap(host, sizeof(host), p3);
 	port = nstr_parse_u32(p4);
-	stream_set_location(st, uri);
-	stream_set_encoding(st, encoding);
-	stream_set_host(st, host);
-	stream_set_port(st, port);
-	elog_err("Starting stream %s\n", st->location);
-	stream_start_pipeline(st);
+	stream_set_location(&stream, uri);
+	stream_set_encoding(&stream, encoding);
+	stream_set_host(&stream, host);
+	stream_set_port(&stream, port);
+	elog_err("Starting stream %s\n", stream.location);
+	stream_start_pipeline(&stream);
 
-	return true;
+	loop = g_main_loop_new(NULL, TRUE);
+	g_main_loop_run(loop);
+
+	stream_destroy(&stream);
 }
 
 uint32_t load_config(void) {
-	char buf[16384];
+	char buf[65536];
 	uint32_t n_streams = 0;
 	nstr_t str = config_load("polystream.conf", nstr_make(buf, sizeof(buf),
 		0));
 	while (nstr_len(str)) {
 		nstr_t cmd = nstr_split(&str, RECORD_SEP);
-		if (start_stream(cmd, n_streams))
+		if (fork() == 0) {
+			start_stream(cmd, n_streams);
+			exit(0);
+		} else
 			n_streams++;
-		if (n_streams > 255)
-			break;
 	}
 	return n_streams;
 }
