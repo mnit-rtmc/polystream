@@ -21,7 +21,7 @@
 
 #define STREAM_NUM_VIDEO	(0)
 
-static const char *IFACE = "eth0";
+static const char *IFACE = "eno2";
 static const uint32_t DEFAULT_LATENCY = 0;
 
 static int stream_elem_next(const struct stream *st) {
