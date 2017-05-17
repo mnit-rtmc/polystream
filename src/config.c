@@ -65,7 +65,7 @@ static gboolean do_restart(gpointer data) {
 static void stop_stream_cb(struct stream *st) {
 	elog_err("Restarting stream %s\n", st->location);
 	stream_stop_pipeline(st);
-	g_timeout_add(500, do_restart, st);
+	g_timeout_add(5000, do_restart, st);
 }
 
 static void start_stream(nstr_t cmd, uint32_t idx) {
