@@ -21,7 +21,6 @@
 
 #define STREAM_NUM_VIDEO	(0)
 
-static const char *IFACE = "eno2";
 static const uint32_t DEFAULT_LATENCY = 0;
 
 static int stream_elem_next(const struct stream *st) {
@@ -71,8 +70,7 @@ static void stream_add_sink(struct stream *st) {
 	GstElement *sink = gst_element_factory_make("udpsink", NULL);
 	g_object_set(G_OBJECT(sink), "host", st->host, NULL);
 	g_object_set(G_OBJECT(sink), "port", st->port, NULL);
-	g_object_set(G_OBJECT(sink), "ttl-mc", 8, NULL);
-	g_object_set(G_OBJECT(sink), "multicast-iface", IFACE, NULL);
+	g_object_set(G_OBJECT(sink), "ttl-mc", 15, NULL);
 	stream_add(st, sink);
 }
 
