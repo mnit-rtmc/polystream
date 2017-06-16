@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 #define BANNER "polystream: v" VERSION "  Copyright (C)  MnDOT\n"
 
 uint32_t load_config(void);
