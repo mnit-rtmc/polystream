@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017  Minnesota Department of Transportation
+ * Copyright (C) 2017-2019  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define VERSION "0.5"
+#define VERSION "0.6"
 #define BANNER "polystream: v" VERSION "  Copyright (C)  MnDOT\n"
 
 uint32_t load_config(void);

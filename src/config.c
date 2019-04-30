@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017  Minnesota Department of Transportation
+ * Copyright (C) 2017-2019  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,10 +74,13 @@ static void start_stream(nstr_t cmd, uint32_t idx) {
 	nstr_t p2 = nstr_split(&str, UNIT_SEP);
 	nstr_t p3 = nstr_split(&str, UNIT_SEP);
 	nstr_t p4 = nstr_split(&str, UNIT_SEP);
+	nstr_t p5 = nstr_split(&str, UNIT_SEP);
 	char uri[128];
 	char encoding[16];
 	char host[128];
 	int port;
+	char config_int[20];
+	bool enable;
 	struct stream stream;
 	GMainLoop *loop;
 
@@ -88,10 +91,13 @@ static void start_stream(nstr_t cmd, uint32_t idx) {
 	nstr_wrap(encoding, sizeof(encoding), p2);
 	nstr_wrap(host, sizeof(host), p3);
 	port = nstr_parse_u32(p4);
+	nstr_wrap(config_int, sizeof(config_int), p5);
 	stream_set_location(&stream, uri);
 	stream_set_encoding(&stream, encoding);
 	stream_set_host(&stream, host);
 	stream_set_port(&stream, port);
+	enable = (strcasecmp("no-config-interval", config_int) != 0);
+	stream_set_config_interval(&stream, enable);
 	elog_err("Starting stream %s\n", stream.location);
 	stream_start_pipeline(&stream);
 

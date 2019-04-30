@@ -108,11 +108,17 @@ static void stream_add_h264_pay(struct stream *st) {
 static void stream_add_later_elements(struct stream *st) {
 	stream_add_sink(st);
 	if (strcmp("MPEG4", st->encoding) == 0) {
-		stream_add_mp4_pay(st);
-		stream_add(st, gst_element_factory_make("rtpmp4vdepay", NULL));
+		if (st->enable_config_int) {
+			stream_add_mp4_pay(st);
+			stream_add(st, gst_element_factory_make("rtpmp4vdepay",
+				NULL));
+		}
 	} else if (strcmp("H264", st->encoding) == 0) {
-		stream_add_h264_pay(st);
-		stream_add(st, gst_element_factory_make("rtph264depay", NULL));
+		if (st->enable_config_int) {
+			stream_add_h264_pay(st);
+			stream_add(st, gst_element_factory_make("rtph264depay",
+				NULL));
+		}
 	} else
 		elog_err("Invalid encoding: %s\n", st->encoding);
 }
@@ -199,6 +205,7 @@ void stream_init(struct stream *st, uint32_t idx) {
 	snprintf(name, 8, "m%d", idx);
 	memset(st->location, 0, sizeof(st->location));
 	memset(st->encoding, 0, sizeof(st->encoding));
+	st->enable_config_int = true;
 	st->latency = DEFAULT_LATENCY;
 	st->pipeline = gst_pipeline_new(name);
 	st->bus = gst_pipeline_get_bus(GST_PIPELINE(st->pipeline));
@@ -229,4 +236,8 @@ void stream_set_host(struct stream *st, const char *host) {
 
 void stream_set_port(struct stream *st, uint32_t port) {
 	st->port = port;
+}
+
+void stream_set_config_interval(struct stream *st, bool enable) {
+	st->enable_config_int = enable;
 }

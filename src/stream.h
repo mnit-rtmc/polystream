@@ -12,6 +12,7 @@ struct stream {
 	char		encoding[8];
 	char		host[128];
 	uint32_t	port;
+	bool		enable_config_int;
 	uint32_t	latency;
 	GstElement	*pipeline;
 	GstBus		*bus;
@@ -28,5 +29,6 @@ void stream_set_location(struct stream *st, const char *loc);
 void stream_set_encoding(struct stream *st, const char *encoding);
 void stream_set_host(struct stream *st, const char *host);
 void stream_set_port(struct stream *st, uint32_t port);
+void stream_set_config_interval(struct stream *st, bool enable);
 
 #endif
